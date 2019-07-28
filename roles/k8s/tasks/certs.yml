@@ -1,0 +1,12 @@
+---
+  - local_action: unarchive src=https://github.com/coreos/etcd/releases/download/{{etcversion}}/etcd-{{etcversion}}-linux-amd64.tar.gz dest={{role_path}}/files/ remote_src=yes
+  - local_action: shell cp -r {{role_path}}/files/etcd-{{etcversion}}-linux-amd64 {{role_path}}/files/etcd
+  - local_action: file path={{role_path}}/files/pki state=directory
+  - local_action: get_url url=https://pkg.cfssl.org/R1.2/{{item}}_linux-amd64 dest={{role_path}}/files/pki/{{item}} mode=0755
+    with_items:
+      - cfssl
+      - cfssljson
+  - local_action: template src={{role_path}}/templates/ca-csr.json.2j dest={{role_path}}/files/pki/ca-csr.json
+  - local_action: shell ./cfssl gencert -initca ca-csr.json | ./cfssljson -bare ca chdir={{role_path}}/files/pki/
+  - local_action: shell cp ca-key.pem ca.key chdir={{role_path}}/files/pki/
+  - local_action: shell cp ca.pem ca.crt chdir={{role_path}}/files/pki/

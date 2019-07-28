@@ -1,0 +1,35 @@
+#jinja2: trim_blocks:False
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos
+
+
+[Service]
+ExecStart=/usr/local/bin/etcd \
+   --advertise-client-urls=https://{{ansible_default_ipv4.address}}:2379 \
+   --cert-file=/etc/kubernetes/pki/etcd/server.crt \
+   --client-cert-auth=true \
+   --data-dir=/var/lib/etcd \
+   --initial-advertise-peer-urls=https://{{ansible_default_ipv4.address}}:2380 \
+   --initial-cluster={% for host in groups[masters] -%}
+  {{ hostvars[host]['ansible_hostname'] }}=https://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:2380
+  {%- if not loop.last -%},{%- endif -%}
+{% endfor %} \
+   --initial-cluster-state=new \
+   --key-file=/etc/kubernetes/pki/etcd/server.key \
+   --listen-client-urls=https://{{ansible_default_ipv4.address}}:2379 \
+   --listen-peer-urls=https://{{ansible_default_ipv4.address}}:2380 \
+   --name={{ansible_hostname}} \
+   --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt \
+   --peer-client-cert-auth=true \
+   --peer-key-file=/etc/kubernetes/pki/etcd/peer.key \
+   --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt \
+   --snapshot-count=10000 \
+   --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+Restart=on-failure
+RestartSec=5
+
+
+
+[Install]
+WantedBy=multi-user.target

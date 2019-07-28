@@ -1,0 +1,21 @@
+---
+  - include: certs.yml
+    become: no
+    run_once: true
+  - include: copy.yml
+    when: ('masters' in group_names)
+  - include: prehost.yml
+    when: ('masters' in group_names) or ('nodes' in group_names)
+  - include: configs.yml
+    when: ('masters' in group_names)
+  - include: etcd.yml
+    when: ('masters' in group_names)
+  - include: init.yml
+    when: inventory_hostname in groups["masters"][0]
+  - include: controlplane.yml
+#    when: not (inventory_hostname in groups["masters"][0] or 'nodes' in group_names)
+    when: not ('cplane' in group_names or 'nodes' in group_names)
+  - include: joinnodes.yml
+    when: ('nodes' in group_names)
+  - include: restart-crio.yml
+    when: ('masters' in group_names) or ('nodes' in group_names)

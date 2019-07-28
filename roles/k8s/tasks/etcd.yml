@@ -1,0 +1,6 @@
+---
+  - shell: kubeadm init phase certs etcd-server --config=/etc/kubernetes/etcd.yml
+  - shell: kubeadm init phase certs etcd-peer --config=/etc/kubernetes/etcd.yml
+  - shell: kubeadm init phase certs etcd-healthcheck-client --config=/etc/kubernetes/etcd.yml
+  - shell: kubeadm init phase certs apiserver-etcd-client --config=/etc/kubernetes/etcd.yml
+  - systemd: state=restarted name=etcd daemon_reload=yes

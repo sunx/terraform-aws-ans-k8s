@@ -1,0 +1,2 @@
+---
+  - shell: kubeadm join {{LOAD_BALANCER_DNS}}:{{LOAD_BALANCER_PORT}} --cri-socket '/var/run/crio/crio.sock' --token "{{ lookup('file', role_path + '/files/TOKEN') }}" --discovery-token-ca-cert-hash sha256:"{{ lookup('file', role_path + '/files/HASH') }}"  --ignore-preflight-errors=NumCPU

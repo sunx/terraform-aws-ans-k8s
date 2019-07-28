@@ -1,0 +1,53 @@
+  - user:
+      name: ubuntu
+      state: absent
+  - apt:
+      name: "*"
+      state: latest
+  - apt: 
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+      - software-properties-common
+      - uidmap
+  - apt_key:
+      keyserver: keyserver.ubuntu.com
+      id: 018ba5ad9df57a4448f0e6cf8becf1637ad8c79d
+  - apt_repository:
+      repo: deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main
+      state: present
+  - apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+  - apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+  - apt: 
+      name: "{{ packages }}" 
+      state: latest
+    vars:
+      packages:
+      - podman
+      - cri-o-1.13
+      - kubelet
+      - kubeadm
+      - kubectl
+  - copy:
+      dest: /etc/default/kubelet
+      content: "KUBELET_EXTRA_ARGS='--cgroup-driver=cgroupfs'"
+  - shell: sed -i 's/systemd/cgroupfs/g' /etc/crio/crio.conf
+  - modprobe:
+      name: br_netfilter
+      state: present
+  - copy:
+      dest: /etc/modules-load.d/br_netfilter.conf
+      content: br_netfilter
+  - sysctl: name=net.ipv4.ip_forward value=1 state=present sysctl_set=yes reload=yes
+  - sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present sysctl_set=yes reload=yes
+  - sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present sysctl_set=yes reload=yes
+  - file: path=/etc/cni/net.d/100-crio-bridge.conf state=absent
+  - systemd: name={{item}} enabled=yes state=restarted
+    with_items:
+      - "crio"
+      - "kubelet"

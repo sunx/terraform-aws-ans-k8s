@@ -1,0 +1,6 @@
+---
+- hosts: all
+  vars_files:
+    - variables.yml
+  roles:
+  - k8s

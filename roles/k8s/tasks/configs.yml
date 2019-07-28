@@ -1,0 +1,4 @@
+---
+  - template: src=templates/etcd.yaml.2j dest=/etc/kubernetes/etcd.yml
+  - template: src=templates/etcd.service.2j dest=/etc/systemd/system/etcd.service 
+  - template: src=templates/config.yaml.2j dest=/etc/kubernetes/config.yml

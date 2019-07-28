@@ -1,0 +1,2 @@
+---
+  - shell: systemctl restart crio

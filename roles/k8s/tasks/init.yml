@@ -1,0 +1,12 @@
+---
+  - shell: kubeadm init --config=/etc/kubernetes/config.yml --cri-socket '/var/run/crio/crio.sock' --ignore-preflight-errors=all
+  - shell: sleep 60 && kubectl apply --kubeconfig=/etc/kubernetes/admin.conf -f https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml
+  - shell: kubeadm init phase upload-certs --upload-certs --config=/etc/kubernetes/config.yml| tail -n1
+    register: controlplane
+  - shell: kubeadm token create
+    register: gen_token
+  - shell: openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null |openssl dgst -sha256 -hex | sed 's/^.* //'
+    register: calc_discov
+  - local_action: copy content={{ controlplane.stdout }} dest={{role_path}}/files/CERTIFICATE
+  - local_action: copy content={{ gen_token.stdout }} dest={{role_path}}/files/TOKEN
+  - local_action: copy content={{ calc_discov.stdout }} dest={{role_path}}/files/HASH
